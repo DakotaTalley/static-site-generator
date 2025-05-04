@@ -12,7 +12,6 @@ class LeafNode(HTMLNode):
             return self.value
         html_node = f"<{self.tag}"
         if self.props is not None:
-            for key in self.props.keys():
-                html_node += f" {key}=\"{self.props[key]}\""
+            html_node += self.props_to_html()
         html_node += f">{self.value}</{self.tag}>"
         return html_node
