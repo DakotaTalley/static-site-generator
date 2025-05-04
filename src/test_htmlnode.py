@@ -9,6 +9,11 @@ class TestHTMLNode(unittest.TestCase):
         node2 = HTMLNode("p", "This is a paragraph")
         self.assertEqual(node, node2)
 
+    def test_to_html(self):
+        node = HTMLNode("p", "This is a paragraph")
+        with self.assertRaises(NotImplementedError):
+            node.to_html()
+
     def test_props_to_html_single_prop(self):
         node = HTMLNode("a", "This is a link", None, {"href": "www.google.com"})
         self.assertEqual(node.props_to_html(), " href=\"www.google.com\"")

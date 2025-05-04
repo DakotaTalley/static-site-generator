@@ -9,6 +9,15 @@ class TestLeafNode(unittest.TestCase):
         node2 = LeafNode("a", "This is a link", {"href": "www.google.com"})
         self.assertEqual(node, node2)
 
+    def test_no_tag(self):
+        node = LeafNode(None, "This is a link", {"href": "www.google.com"})
+        self.assertEqual(node.to_html(), "This is a link")
+
+    def test_no_value(self):
+        node = LeafNode("a", None, {"href": "www.google.com"})
+        with self.assertRaises(ValueError):
+            node.to_html()
+
     def test_to_html(self):
         node = LeafNode("a", "This is a link", {"href": "www.google.com"})
         self.assertEqual(node.to_html(), "<a href=\"www.google.com\">This is a link</a>")
