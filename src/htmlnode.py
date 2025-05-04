@@ -23,16 +23,4 @@ class HTMLNode():
         return html_string
 
     def __repr__(self):
-        print_text = f"HTMLNode("
-        print_text += f"tag=\"{self.tag}\" "
-        print_text += f"value=\"{self.value}\" "
-        if self.children is not None:
-            print_text += "children="
-            for child in self.children:
-                print_text += f"{child} "
-        if self.props is not None:
-            print_text += "props="
-            for key in self.props.keys():
-                print_text += f"{{{key}={self.props[key]}}} "
-        print_text += ")"
-        return print_text
+        return f"HTMLNode({self.tag}, {self.value}, children: {self.children}, {self.props})"
