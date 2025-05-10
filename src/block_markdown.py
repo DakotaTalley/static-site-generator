@@ -19,15 +19,27 @@ def markdown_to_blocks(markdown):
     return blocks
 
 def block_to_block_type(markdown_block):
-    if len(re.findall(r"^(#{1,6} )", markdown_block)) > 0:
+    lines = markdown_block.split("\n")
+
+    if markdown_block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
         return BlockType.HEADING
-    if markdown_block[0:3] == "```" and markdown_block[-3:] == "```":
+    if lines[0].startswith("```") and lines[-1].startswith("```"):
         return BlockType.CODE
-    if markdown_block[0] == ">":
+    if markdown_block.startswith(">"):
+        for line in lines:
+            if not line.startswith(">"):
+                return BlockType.PARAGRAPH
         return BlockType.QUOTE
-    if markdown_block[0:2] == "- ":
+    if markdown_block.startswith("- "):
+        for line in lines:
+            if not line.startswith("- "):
+                return BlockType.PARAGRAPH
         return BlockType.UNORDERED_LIST
-    if markdown_block[0:3] == "1. ":
+    if markdown_block.startswith("1. "):
+        i = 1
+        for line in lines:
+            if not line.startswith(f"{i}. "):
+                return BlockType.PARAGRAPH
+            i += 1
         return BlockType.ORDERED_LIST
-    else:
-        return BlockType.PARAGRAPH
+    return BlockType.PARAGRAPH
