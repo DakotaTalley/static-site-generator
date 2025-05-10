@@ -1,6 +1,6 @@
 import unittest
 
-from block_markdown import markdown_to_blocks
+from block_markdown import BlockType, block_to_block_type, markdown_to_blocks
 
 
 class TestMarkdownToBlocks(unittest.TestCase):
@@ -66,6 +66,45 @@ This paragraph has additional newlines at the end
         self.assertEqual(blocks, [
                 "This paragraph has additional newlines at the end"
             ])
+
+
+class TestBlockToBlockType(unittest.TestCase):
+    def test_heading_one(self):
+        md = "# This is a heading"
+        self.assertEqual(block_to_block_type(md), BlockType.HEADING)
+
+    def test_heading_two(self):
+        md = "## This is a heading"
+        self.assertEqual(block_to_block_type(md), BlockType.HEADING)
+
+    def test_heading_six(self):
+        md = "###### This is a heading"
+        self.assertEqual(block_to_block_type(md), BlockType.HEADING)
+
+    def test_paragraph_seven_hashes(self):
+        md = "####### This is a paragraph"
+        self.assertEqual(block_to_block_type(md), BlockType.PARAGRAPH)
+
+    def test_code(self):
+        md = "```This is a code block```"
+        self.assertEqual(block_to_block_type(md), BlockType.CODE)
+
+    def test_invalid_code(self):
+        md = "``This is a paragraph``"
+        self.assertEqual(block_to_block_type(md), BlockType.PARAGRAPH)
+    
+    def test_quote(self):
+        md = ">This is a blockquote"
+        self.assertEqual(block_to_block_type(md), BlockType.QUOTE)
+
+    def test_ul(self):
+        md = "- This is list item 1"
+        self.assertEqual(block_to_block_type(md), BlockType.UNORDERED_LIST)
+
+    def test_ol(self):
+        md = "1. This is list item 1"
+        self.assertEqual(block_to_block_type(md), BlockType.ORDERED_LIST)
+
 
 
 if __name__ == "__main__":
