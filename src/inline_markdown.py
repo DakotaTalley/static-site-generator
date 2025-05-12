@@ -2,88 +2,80 @@ import re
 from textnode import TextNode, TextType
 
 def text_to_textnodes(text):
-    text_node = TextNode(text, TextType.TEXT)
-    split_bold = split_nodes_delimiter([text_node], "**", TextType.BOLD)
-    split_italic = split_nodes_delimiter(split_bold, "_", TextType.ITALIC)
-    split_code = split_nodes_delimiter(split_italic, "`", TextType.CODE)
-    split_link = split_nodes_link(split_code)
-    split_image = split_nodes_image(split_link)
+    nodes = TextNode(text, TextType.TEXT)
+    nodes = split_nodes_delimiter([nodes], "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    nodes = split_nodes_link(nodes)
+    nodes = split_nodes_image(nodes)
 
-    return split_image
+    return nodes
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     for node in old_nodes:
         if node.text_type is not TextType.TEXT:
             new_nodes.append(node)
-        else:
-            new_nodes.extend(recursive_delimiter_node_split(node, delimiter, text_type))
-        
+            continue
+        split_nodes = []
+        sections = node.text.split(delimiter)
+        if len(sections) % 2 == 0:
+            raise ValueError("invalid markdown, formatted section not closed")
+        for i in range(len(sections)):
+            if sections[i] == "":
+                continue
+            if i % 2 == 0:
+                split_nodes.append(TextNode(sections[i], TextType.TEXT))
+            else:
+                split_nodes.append(TextNode(sections[i], text_type))
+        new_nodes.extend(split_nodes)
     return new_nodes
 
 def split_nodes_image(old_nodes):
     new_nodes = []
     for node in old_nodes:
-        if node.text_type is not TextType.TEXT:
+        if node.text_type != TextType.TEXT:
             new_nodes.append(node)
-        else:
-            new_nodes.extend(recursive_image_link_node_split(node, extract_markdown_images, TextType.IMAGE))
-        
+            continue
+        original_text = node.text
+        images = extract_markdown_images(original_text)
+        if len(images) == 0:
+            new_nodes.append(node)
+            continue
+        for image in images:
+            sections = original_text.split(f"![{image[0]}]({image[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("inavlid markdown, image section not closed")
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(TextNode(image[0], TextType.IMAGE, image[1]))
+            original_text = sections[1]
+        if original_text != "":
+            new_nodes.append(TextNode(original_text, TextType.TEXT))
     return new_nodes
 
 def split_nodes_link(old_nodes):
     new_nodes = []
     for node in old_nodes:
-        if node.text_type is not TextType.TEXT:
+        if node.text_type != TextType.TEXT:
             new_nodes.append(node)
-        else:
-            new_nodes.extend(recursive_image_link_node_split(node, extract_markdown_links, TextType.LINK))
-        
+            continue
+        original_text = node.text
+        links = extract_markdown_links(original_text)
+        if len(links) == 0:
+            new_nodes.append(node)
+            continue
+        for link in links:
+            sections = original_text.split(f"[{link[0]}]({link[1]})", 1)
+            if len(sections) != 2:
+                raise ValueError("inavlid markdown, link section not closed")
+            if sections[0] != "":
+                new_nodes.append(TextNode(sections[0], TextType.TEXT))
+            new_nodes.append(TextNode(link[0], TextType.LINK, link[1]))
+            original_text = sections[1]
+        if original_text != "":
+            new_nodes.append(TextNode(original_text, TextType.TEXT))
     return new_nodes
-
-def recursive_delimiter_node_split(node, delimiter, text_type):
-    if node.text.find(delimiter) == -1:
-        return [node]
-    split_node = node.text.split(delimiter, maxsplit=2)
-    if len(split_node) < 3:
-        raise Exception("invalid Markdown syntax")
-    node_list = [
-        TextNode(split_node[0], TextType.TEXT),
-        TextNode(split_node[1], text_type)
-    ]
-    node_list.extend(recursive_delimiter_node_split(
-            TextNode(split_node[2], TextType.TEXT),
-            delimiter,
-            text_type
-        ))
-    
-    return node_list
-
-def recursive_image_link_node_split(node, extractor, text_type):
-    markdown_tags = extractor(node.text)
-    if len(markdown_tags) == 0:
-        return [node]
-    
-    if text_type == TextType.LINK:
-        delimiter = f"[{markdown_tags[0][0]}]({markdown_tags[0][1]})"
-    else:
-        delimiter = f"![{markdown_tags[0][0]}]({markdown_tags[0][1]})"
-    
-    sections = node.text.split(delimiter, 1)
-    text_node = TextNode(sections[0], TextType.TEXT)
-    new_node = TextNode(markdown_tags[0][0], text_type, markdown_tags[0][1])
-    node_list = [text_node, new_node]
-
-    if sections[1] == "":
-        return node_list
-    
-    node_list.extend(recursive_image_link_node_split(
-            TextNode(sections[1], TextType.TEXT),
-            extractor,
-            text_type
-        ))
-    
-    return node_list
 
 def extract_markdown_images(text):
     matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
