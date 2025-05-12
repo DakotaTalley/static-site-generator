@@ -17,6 +17,7 @@ def markdown_to_html_node(markdown):
 
 def text_to_children(text):
     html_nodes = []
+    text = text.replace("\n", " ")
     text_nodes = text_to_textnodes(text)
     for node in text_nodes:
         html_nodes.append(text_node_to_html_node(node))
