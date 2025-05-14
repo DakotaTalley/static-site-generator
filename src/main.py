@@ -11,11 +11,22 @@ template_path = "./template.html"
 
 def main():
     build_project_dir(dir_path_static, dir_path_public)
-    generate_page(
-        os.path.join(dir_path_content, "index.md"),
-        template_path,
-        os.path.join(dir_path_public, "index.html"),
-    )
+    generate_pages_recursive(dir_path_content, template_path, dir_path_public)
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    path_dir = os.listdir(dir_path_content)
+    if len(path_dir) <= 0:
+        return 0
+    for item in path_dir:
+        from_path = os.path.join(dir_path_content, item)
+        dest_path = os.path.join(dest_dir_path, item.replace(".md", ".html"))
+        print(from_path, dest_path)
+        if os.path.isfile(from_path) and from_path.endswith(".md"):
+            generate_page(from_path, template_path, dest_path)
+        else:
+            os.mkdir(dest_path)
+            generate_pages_recursive(from_path, template_path, dest_path)
+    return 0
 
 def generate_page(from_path, template_path, dest_path):
     print("Generating page from {from_path} to {dest_path} using {template_path}")
