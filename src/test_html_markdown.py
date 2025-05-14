@@ -80,6 +80,22 @@ This is another paragraph with _italic_ text and `code` here
             "<div><p>####### This is a heading</p></div>",
         )
 
+    def test_headings(self):
+        md = """
+# this is an h1
+
+this is paragraph text
+
+## this is an h2
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>this is an h1</h1><p>this is paragraph text</p><h2>this is an h2</h2></div>",
+        )
+
     def test_codeblock(self):
         md = """
 ```
@@ -155,4 +171,23 @@ the **same** even with inline stuff
         self.assertEqual(
             html,
             "<div><ol><li>List Item 1</li><li>List Item 2</li><li>List Item 3</li></ol></div>",
+        )
+    
+    def test_lists(self):
+        md = """
+- This is a list
+- with items
+- and _more_ items
+
+1. This is an `ordered` list
+2. with items
+3. and more items
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>This is a list</li><li>with items</li><li>and <i>more</i> items</li></ul><ol><li>This is an <code>ordered</code> list</li><li>with items</li><li>and more items</li></ol></div>",
         )
