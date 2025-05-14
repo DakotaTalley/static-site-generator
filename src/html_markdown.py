@@ -58,9 +58,15 @@ def code_to_html_node(block):
     return ParentNode("pre", [code])
 
 def quote_to_html_node(block):
-    block = block.replace("> ", "")
-    nodes = text_to_children(block)
-    return ParentNode("blockquote", nodes)
+    lines = block.split("\n")
+    new_lines = []
+    for line in lines:
+        if not line.startswith(">"):
+            raise ValueError("invalid quote block")
+        new_lines.append(line.lstrip(">").strip())
+    content = " ".join(new_lines)
+    children = text_to_children(content)
+    return ParentNode("blockquote", children)
 
 def unordered_list_to_html_node(block):
     li_nodes = []

@@ -17,9 +17,11 @@ class HTMLNode():
         )
 
     def props_to_html(self):
+        if self.props is None:
+            return ""
         html_string = ""
-        for key in self.props.keys():
-            html_string += f" {key}=\"{self.props[key]}\""
+        for prop in self.props:
+            html_string += f" {prop}=\"{self.props[prop]}\""
         return html_string
 
     def __repr__(self):
@@ -34,11 +36,7 @@ class LeafNode(HTMLNode):
             raise ValueError("all leaf nodes must have a value")
         if self.tag is None:
             return self.value
-        html_node = f"<{self.tag}"
-        if self.props is not None:
-            html_node += self.props_to_html()
-        html_node += f">{self.value}</{self.tag}>"
-        return html_node
+        return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
     
     def __repr__(self):
         return f"LeafNode({self.tag}, {self.value}, {self.props})"

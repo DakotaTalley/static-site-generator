@@ -132,7 +132,7 @@ the **same** even with inline stuff
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><blockquote>This is a blockquote\n\nAnd has multiple lines</blockquote></div>",
+            "<div><blockquote>This is a blockquote  And has multiple lines</blockquote></div>",
         )
 
     def test_unordered_list(self):
